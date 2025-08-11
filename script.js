@@ -1,66 +1,66 @@
-// script.js
-
-// Get teacher name from URL
+// Get teacher name from URL (?name=...)
 const urlParams = new URLSearchParams(window.location.search);
 const teacherName = urlParams.get('name') || "Dear Teacher";
-document.getElementById("teacherName").textContent = teacherName;
 
-// Random quotes
+// Quotes for Teachers' Day
 const quotes = [
-  "It is the supreme art of the teacher to awaken joy in creative expression and knowledge. – Albert Einstein",
-  "Teaching is the one profession that creates all other professions.",
   "A teacher takes a hand, opens a mind, and touches a heart.",
-  "The influence of a good teacher can never be erased."
+  "Teaching is the profession that teaches all the other professions.",
+  "The influence of a good teacher can never be erased.",
+  "Teachers plant seeds of knowledge that grow forever."
 ];
 
-document.getElementById("quote").textContent = quotes[Math.floor(Math.random() * quotes.length)];
+// Pick a random quote
+const randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
 
-// Confetti animation
-const canvas = document.getElementById("confetti");
-const ctx = canvas.getContext("2d");
+// Set name & quote in HTML
+document.getElementById('teacherName').textContent = teacherName;
+document.getElementById('quote').textContent = randomQuote;
+
+// Confetti Animation
+const canvas = document.getElementById('confetti');
+const ctx = canvas.getContext('2d');
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 
-let confetti = [];
+const confettiPieces = [];
+const colors = ['#f39c12', '#d35400', '#e74c3c', '#2ecc71', '#3498db'];
 
-function ConfettiParticle() {
+function ConfettiPiece() {
   this.x = Math.random() * canvas.width;
   this.y = Math.random() * canvas.height - canvas.height;
-  this.r = Math.random() * 6 + 4;
-  this.d = Math.random() * 50 + 50;
-  this.color = `hsl(${Math.random() * 360}, 100%, 50%)`;
-  this.tilt = Math.random() * 10 - 10;
-  this.tiltAngleIncrement = Math.random() * 0.07 + 0.05;
-  this.tiltAngle = 0;
-
-  this.draw = () => {
-    ctx.beginPath();
-    ctx.lineWidth = this.r / 2;
-    ctx.strokeStyle = this.color;
-    ctx.moveTo(this.x + this.tilt + this.r / 4, this.y);
-    ctx.lineTo(this.x + this.tilt, this.y + this.tilt + this.r / 4);
-    ctx.stroke();
-  };
+  this.size = Math.random() * 8 + 4;
+  this.color = colors[Math.floor(Math.random() * colors.length)];
+  this.speed = Math.random() * 3 + 2;
+  this.rotation = Math.random() * 360;
 }
 
-function drawConfetti() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  confetti.forEach((c, i) => {
-    c.tiltAngle += c.tiltAngleIncrement;
-    c.y += (Math.cos(c.d) + 3 + c.r / 2) / 2;
-    c.x += Math.sin(c.d);
-    c.tilt = Math.sin(c.tiltAngle) * 15;
+ConfettiPiece.prototype.update = function() {
+  this.y += this.speed;
+  if (this.y > canvas.height) {
+    this.y = -10;
+    this.x = Math.random() * canvas.width;
+  }
+};
 
-    if (c.y > canvas.height) {
-      confetti[i] = new ConfettiParticle();
-      confetti[i].y = -10;
-    }
-    c.draw();
-  });
-  requestAnimationFrame(drawConfetti);
-}
+ConfettiPiece.prototype.draw = function() {
+  ctx.fillStyle = this.color;
+  ctx.beginPath();
+  ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+  ctx.fill();
+};
 
 for (let i = 0; i < 150; i++) {
-  confetti.push(new ConfettiParticle());
+  confettiPieces.push(new ConfettiPiece());
 }
-drawConfetti();
+
+function animate() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  confettiPieces.forEach(p => {
+    p.update();
+    p.draw();
+  });
+  requestAnimationFrame(animate);
+}
+
+animate();
