@@ -1,66 +1,71 @@
 // Get teacher name from URL (?name=...)
 const urlParams = new URLSearchParams(window.location.search);
-const teacherName = urlParams.get('name') || "Dear Teacher";
+const teacherName = urlParams.get('name') || "Respected Teacher";
 
 // Quotes for Teachers' Day
 const quotes = [
   "A teacher takes a hand, opens a mind, and touches a heart.",
-  "Teaching is the profession that teaches all the other professions.",
+  "Teaching is the one profession that creates all other professions.",
+  "Good teachers know how to bring out the best in students.",
   "The influence of a good teacher can never be erased.",
-  "Teachers plant seeds of knowledge that grow forever."
+  "Teachers plant the seeds of knowledge that grow forever."
 ];
 
-// Pick a random quote
-const randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
+// Display name & random quote
+document.getElementById("teacherName").textContent = teacherName;
+document.getElementById("quote").textContent = quotes[Math.floor(Math.random() * quotes.length)];
 
-// Set name & quote in HTML
-document.getElementById('teacherName').textContent = teacherName;
-document.getElementById('quote').textContent = randomQuote;
+// Simple confetti animation
+const confettiCanvas = document.getElementById("confetti");
+const ctx = confettiCanvas.getContext("2d");
+let confettiPieces = [];
 
-// Confetti Animation
-const canvas = document.getElementById('confetti');
-const ctx = canvas.getContext('2d');
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
+function resizeCanvas() {
+  confettiCanvas.width = window.innerWidth;
+  confettiCanvas.height = window.innerHeight;
+}
+window.addEventListener("resize", resizeCanvas);
+resizeCanvas();
 
-const confettiPieces = [];
-const colors = ['#f39c12', '#d35400', '#e74c3c', '#2ecc71', '#3498db'];
-
-function ConfettiPiece() {
-  this.x = Math.random() * canvas.width;
-  this.y = Math.random() * canvas.height - canvas.height;
-  this.size = Math.random() * 8 + 4;
-  this.color = colors[Math.floor(Math.random() * colors.length)];
-  this.speed = Math.random() * 3 + 2;
-  this.rotation = Math.random() * 360;
+function createConfetti() {
+  return {
+    x: Math.random() * confettiCanvas.width,
+    y: Math.random() * confettiCanvas.height - confettiCanvas.height,
+    r: Math.random() * 6 + 4,
+    d: Math.random() * 0.5 + 0.5,
+    color: `hsl(${Math.random() * 360}, 100%, 50%)`,
+    tilt: Math.random() * 10 - 10
+  };
 }
 
-ConfettiPiece.prototype.update = function() {
-  this.y += this.speed;
-  if (this.y > canvas.height) {
-    this.y = -10;
-    this.x = Math.random() * canvas.width;
-  }
-};
-
-ConfettiPiece.prototype.draw = function() {
-  ctx.fillStyle = this.color;
-  ctx.beginPath();
-  ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-  ctx.fill();
-};
-
-for (let i = 0; i < 150; i++) {
-  confettiPieces.push(new ConfettiPiece());
-}
-
-function animate() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
+function drawConfetti() {
+  ctx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
   confettiPieces.forEach(p => {
-    p.update();
-    p.draw();
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2, false);
+    ctx.fillStyle = p.color;
+    ctx.fill();
   });
-  requestAnimationFrame(animate);
+  updateConfetti();
 }
 
-animate();
+function updateConfetti() {
+  confettiPieces.forEach(p => {
+    p.y += p.d;
+    p.x += Math.sin(p.tilt);
+    if (p.y > confettiCanvas.height) {
+      p.x = Math.random() * confettiCanvas.width;
+      p.y = -10;
+    }
+  });
+}
+
+function initConfetti() {
+  confettiPieces = [];
+  for (let i = 0; i < 150; i++) {
+    confettiPieces.push(createConfetti());
+  }
+  setInterval(drawConfetti, 20);
+}
+
+initConfetti();
