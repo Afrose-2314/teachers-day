@@ -1,72 +1,66 @@
 // script.js
-// Read ?name= from URL and show invitation
-(function(){
-  // Safe access to DOM after load
-  function ready(fn){
-    if (document.readyState !== 'loading') fn();
-    else document.addEventListener('DOMContentLoaded', fn);
-  }
 
-  ready(function(){
-    // Get name parameter (works when opened locally or from server)
-    const params = new URLSearchParams(location.search);
-    const rawName = params.get('name') || '';
-    const name = decodeURIComponent(rawName).trim();
-    const displayName = name ? `Dear ${name}, You are warmly invited!` : 'Dear Respected Teacher, You are warmly invited!';
+// Get teacher name from URL
+const urlParams = new URLSearchParams(window.location.search);
+const teacherName = urlParams.get('name') || "Dear Teacher";
+document.getElementById("teacherName").textContent = teacherName;
 
-    document.getElementById('teacherName').innerText = displayName;
+// Random quotes
+const quotes = [
+  "It is the supreme art of the teacher to awaken joy in creative expression and knowledge. – Albert Einstein",
+  "Teaching is the one profession that creates all other professions.",
+  "A teacher takes a hand, opens a mind, and touches a heart.",
+  "The influence of a good teacher can never be erased."
+];
 
-    // quotes
-    const quotes = [
-      "It is the supreme art of the teacher to awaken joy in creative expression and knowledge. – Albert Einstein",
-      "A teacher affects eternity; he can never tell where his influence stops. – Henry Adams",
-      "Teaching is the profession that teaches all other professions. – Unknown",
-      "The best teachers teach from the heart, not from the book. – Unknown",
-      "Education is not the filling of a pail, but the lighting of a fire. – William Butler Yeats"
-    ];
-    document.getElementById('quote').innerText = quotes[Math.floor(Math.random()*quotes.length)];
+document.getElementById("quote").textContent = quotes[Math.floor(Math.random() * quotes.length)];
 
-    // Confetti simple
-    const canvas = document.getElementById('confetti');
-    const ctx = canvas.getContext('2d');
-    function resize(){ canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
-    window.addEventListener('resize', resize);
-    resize();
+// Confetti animation
+const canvas = document.getElementById("confetti");
+const ctx = canvas.getContext("2d");
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
 
-    const pieces = [];
-    for(let i=0;i<120;i++){
-      pieces.push({
-        x: Math.random()*canvas.width,
-        y: Math.random()*canvas.height - canvas.height,
-        w: Math.random()*8 + 6,
-        h: Math.random()*4 + 3,
-        color: `hsl(${Math.random()*360}, 80%, 55%)`,
-        velY: Math.random()*1.5 + 0.5,
-        velX: (Math.random()-0.5)*1.2,
-        rot: Math.random()*Math.PI
-      });
+let confetti = [];
+
+function ConfettiParticle() {
+  this.x = Math.random() * canvas.width;
+  this.y = Math.random() * canvas.height - canvas.height;
+  this.r = Math.random() * 6 + 4;
+  this.d = Math.random() * 50 + 50;
+  this.color = `hsl(${Math.random() * 360}, 100%, 50%)`;
+  this.tilt = Math.random() * 10 - 10;
+  this.tiltAngleIncrement = Math.random() * 0.07 + 0.05;
+  this.tiltAngle = 0;
+
+  this.draw = () => {
+    ctx.beginPath();
+    ctx.lineWidth = this.r / 2;
+    ctx.strokeStyle = this.color;
+    ctx.moveTo(this.x + this.tilt + this.r / 4, this.y);
+    ctx.lineTo(this.x + this.tilt, this.y + this.tilt + this.r / 4);
+    ctx.stroke();
+  };
+}
+
+function drawConfetti() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  confetti.forEach((c, i) => {
+    c.tiltAngle += c.tiltAngleIncrement;
+    c.y += (Math.cos(c.d) + 3 + c.r / 2) / 2;
+    c.x += Math.sin(c.d);
+    c.tilt = Math.sin(c.tiltAngle) * 15;
+
+    if (c.y > canvas.height) {
+      confetti[i] = new ConfettiParticle();
+      confetti[i].y = -10;
     }
-
-    function draw(){
-      ctx.clearRect(0,0,canvas.width,canvas.height);
-      for(const p of pieces){
-        ctx.save();
-        ctx.translate(p.x,p.y);
-        ctx.rotate(p.rot);
-        ctx.fillStyle = p.color;
-        ctx.fillRect(-p.w/2, -p.h/2, p.w, p.h);
-        ctx.restore();
-
-        p.x += p.velX;
-        p.y += p.velY;
-        p.rot += 0.05;
-
-        if(p.y > canvas.height + 20){ p.y = -20; p.x = Math.random()*canvas.width; }
-        if(p.x < -50) p.x = canvas.width + 50;
-        if(p.x > canvas.width + 50) p.x = -50;
-      }
-      requestAnimationFrame(draw);
-    }
-    requestAnimationFrame(draw);
+    c.draw();
   });
-})();
+  requestAnimationFrame(drawConfetti);
+}
+
+for (let i = 0; i < 150; i++) {
+  confetti.push(new ConfettiParticle());
+}
+drawConfetti();
